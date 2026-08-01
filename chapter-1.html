@@ -424,7 +424,6 @@
     <span class="thin"></span>
     <h2>Chapter One — The Ditch</h2>
     <p>Picardy, late April 1941. A pilot on his back in a drainage ditch, and nothing he can do about any of it.</p>
-    <a class="go gone" id="continueChapter" href="#">Continue from Chapter Two →</a>
     <button class="go gone" id="resume">Resume where you left off</button>
     <button class="go" id="begin">Begin Chapter One</button>
     <span class="foot">Prototype. Chapter one only.</span>
@@ -1309,36 +1308,37 @@
 
   document.getElementById('savebtn').addEventListener('click', doSave);
 
-  (function checkForFurtherProgress(){
-    /* the newsletter link only ever points at Chapter One — if the reader
-       has actually progressed further and saved from there, this is what
-       lets that one shared link still take them back to where they really
-       are, instead of only ever offering to resume within Chapter One
-       itself. Takes priority over this chapter's own resume, below.       */
+  (function checkForSave(){
+    /* one "Resume where you left off" button, not two competing options.
+       It checks the shared cross-chapter pointer first — the newsletter
+       link only ever points at Chapter One, so if the reader actually
+       progressed further and saved there, resuming should take them
+       straight back to that chapter, not just offer to resume within
+       Chapter One itself. Falls back to this chapter's own save only if
+       there's no further progress recorded.                              */
     try{
       var lastCh = localStorage.getItem(LAST_CHAPTER_KEY);
-      if(lastCh !== '2' && lastCh !== '3') return false;
-      var otherSave = localStorage.getItem('tpg_save_ch' + lastCh);
-      if(!otherSave) return false;
-      var link = document.getElementById('continueChapter');
-      link.textContent = 'Continue from Chapter ' + (lastCh === '2' ? 'Two' : 'Three') + ' \u2192';
-      link.href = 'chapter-' + lastCh + '.html';
-      link.classList.remove('gone');
-      document.getElementById('begin').textContent = 'Restart Chapter One';
-      return true;
-    }catch(e){ return false; }
-  })();
+      if(lastCh === '2' || lastCh === '3'){
+        var otherSave = localStorage.getItem('tpg_save_ch' + lastCh);
+        if(otherSave){
+          var resumeBtn = document.getElementById('resume');
+          resumeBtn.classList.remove('gone');
+          document.getElementById('begin').textContent = 'Restart Chapter One';
+          resumeBtn.addEventListener('click', function(){
+            window.location.href = 'chapter-' + lastCh + '.html';
+          });
+          return;
+        }
+      }
 
-  (function checkForSave(){
-    try{
       var raw = localStorage.getItem(SAVE_KEY);
       if(!raw) return;
       var data = JSON.parse(raw);
       if(!data || !data.scene || !scenes[data.scene]) return;
-      var resumeBtn = document.getElementById('resume');
-      resumeBtn.classList.remove('gone');
+      var resumeBtn2 = document.getElementById('resume');
+      resumeBtn2.classList.remove('gone');
       document.getElementById('begin').textContent = 'Restart Chapter One';
-      resumeBtn.addEventListener('click', function(){
+      resumeBtn2.addEventListener('click', function(){
         steady = data.steady || 0;
         looked = data.looked || {};
         spent  = data.spent  || {};
