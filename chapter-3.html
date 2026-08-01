@@ -1624,7 +1624,20 @@
   document.getElementById('savebtn').addEventListener('click', doSave);
 
   (function checkForSave(){
+    /* arriving via the in-story "Play Chapter Three" link is a fresh
+       forward step in one continuous read, not a return visit — it
+       shouldn't surface some old, disconnected save from an earlier
+       session. The link marks that with ?fresh=1. Visiting this page
+       directly (a bookmark, or reopening later) has no such marker, so
+       resume still works normally in that case. The old save itself is
+       left untouched either way — this only suppresses the offer.        */
+    var arrivedFresh = /[?&]fresh=1\b/.test(window.location.search);
+    if(arrivedFresh){
+      try{ window.history.replaceState(null, '', window.location.pathname); }catch(e){}
+    }
+
     try{
+      if(arrivedFresh) return;
       var raw = localStorage.getItem(SAVE_KEY);
       if(!raw) return;
       var data = JSON.parse(raw);

@@ -510,7 +510,7 @@
     <h2>The pear tree, through the van doors.</h2>
     <span class="thin"></span>
     <p id="endnote"></p>
-    <a class="go" href="chapter-3.html">Play Chapter Three →</a>
+    <a class="go" href="chapter-3.html?fresh=1">Play Chapter Three →</a>
     <a class="go buy" href="https://mybook.to/ThePatientGround" target="_blank" rel="noopener">Buy the Book</a>
     <button class="again-link" id="again">Start Chapter Two again</button>
     <span class="foot">The Patient Ground — a novel by [Author Name]</span>
@@ -1775,7 +1775,20 @@
   document.getElementById('savebtn').addEventListener('click', doSave);
 
   (function checkForSave(){
+    /* arriving via the in-story "Play Chapter Two/Three" link is a fresh
+       forward step in one continuous read, not a return visit — it
+       shouldn't surface some old, disconnected save from an earlier
+       session. The link marks that with ?fresh=1. Visiting this page
+       directly (a bookmark, or reopening later) has no such marker, so
+       resume still works normally in that case. The old save itself is
+       left untouched either way — this only suppresses the offer.        */
+    var arrivedFresh = /[?&]fresh=1\b/.test(window.location.search);
+    if(arrivedFresh){
+      try{ window.history.replaceState(null, '', window.location.pathname); }catch(e){}
+    }
+
     try{
+      if(arrivedFresh) return;
       var raw = localStorage.getItem(SAVE_KEY);
       if(!raw) return;
       var data = JSON.parse(raw);
