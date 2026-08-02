@@ -1065,7 +1065,10 @@
         p.innerHTML = tx;
         prose.appendChild(p);
       });
-      script.scrollTop = 0;
+      /* no forced scroll here \u2014 unlike a genuinely new find, re-touching
+         something already read shouldn't yank the view away from wherever
+         the player currently is (very possibly mid-scroll toward the
+         Continue button, which this would otherwise repeatedly hide).      */
     }
 
     function moveTo(cx, cy){
@@ -1238,6 +1241,7 @@
           teardown();
           paint(s.next.go);
         }));
+        script.scrollTop = script.scrollHeight;
       } else {
         /* he has not finished. no way onward yet. */
         var wait = document.createElement('p');
