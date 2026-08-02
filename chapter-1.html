@@ -1001,15 +1001,17 @@
       if(e.touches && e.touches.length){ moveTo(e.touches[0].clientX, e.touches[0].clientY); }
       else { moveTo(e.clientX, e.clientY); }
     }
-    exam.addEventListener('mousemove', onMove);
-    exam.addEventListener('touchstart', function(e){ e.preventDefault(); onMove(e); }, {passive:false});
-    exam.addEventListener('touchmove',  function(e){ e.preventDefault(); onMove(e); }, {passive:false});
-    exam.addEventListener('mouseleave', function(){
+    function onTouch(e){ e.preventDefault(); onMove(e); }
+    function onLeave(){
       exam.style.setProperty('--mx','-999px');
       exam.style.setProperty('--my','-999px');
       dwellOn = null;
       exam.style.setProperty('--dwo', 0);
-    });
+    }
+    exam.addEventListener('mousemove', onMove);
+    exam.addEventListener('touchstart', onTouch, {passive:false});
+    exam.addEventListener('touchmove',  onTouch, {passive:false});
+    exam.addEventListener('mouseleave', onLeave);
 
     /* the proceed line, and the accessible way out */
     var nameBtn = null;
@@ -1063,6 +1065,9 @@
       script.classList.remove('through');
       exam.classList.remove('on');
       exam.removeEventListener('mousemove', onMove);
+      exam.removeEventListener('touchstart', onTouch);
+      exam.removeEventListener('touchmove', onTouch);
+      exam.removeEventListener('mouseleave', onLeave);
       exam.querySelectorAll('.pin').forEach(function(p){ p.remove(); });
       exam.style.setProperty('--mx','-999px');
       exam.style.setProperty('--my','-999px');
