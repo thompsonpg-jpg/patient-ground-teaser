@@ -513,7 +513,7 @@
     <a class="go" href="chapter-3.html?fresh=1">Play Chapter Three →</a>
     <a class="go buy" href="https://mybook.to/ThePatientGround" target="_blank" rel="noopener">Buy the Book</a>
     <button class="again-link" id="again">Start Chapter Two again</button>
-    <span class="foot">The Patient Ground — a novel by [Author Name]</span>
+    <span class="foot">The Patient Ground — a novel by Peter G Thompson</span>
   </div>
 
 </div>
@@ -821,7 +821,7 @@
       text:[
         "They were back before he had let himself believe they'd manage it \u2014 the boy with the small printed card from Th\u00e9r\u00e8se's own ledger drawer, breathless, and the girl already reaching up to fit it into the holder screwed to his door: <em>Notice M\u00e9dicale \u2014 Quarantaine \u2014 Entr\u00e9e Strictement Interdite.</em>",
         "He had wondered, days ago, why a house full of sick children needed cards like this at all. Now he understood the card was not about the door. It was about what a man with a clipboard does when he reads it.",
-        "\u2018Sit,\u2019 he told them. \u2018You, the end of the bed. You, the chair. Don't touch anything, don't hide \u2014 just be children who are supposed to be here.\u2019"
+        "\u2018Sit,\u2019 he told them. \u2018You, that chair. You, this one. Don't touch anything, don't hide \u2014 just be children who are supposed to be here.\u2019"
       ],
       opts:[ { t:"Wait for the footsteps.", go:'cough' } ]
     },
@@ -831,7 +831,7 @@
       keep:true, label:'The footsteps stop outside',
       text:[
         "The boots stopped outside the door. A pause exactly long enough for a man to read a small printed card by lamplight.",
-        "The boy sat rigid at the end of the bed. The girl sat rigid in the wooden chair. Neither of them moved, watching his face for the one thing he could still give them: the moment."
+        "The boy sat rigid in one wooden chair. The girl sat rigid in the other. Neither of them moved, watching his face for the one thing he could still give them: the moment."
       ],
       cough:{
         cap:'Tell them: cough. Not yet. Not yet.',
@@ -1795,7 +1795,13 @@
        resume still works normally in that case. The old save itself is
        left untouched either way — this only suppresses the offer.        */
     var arrivedFresh = /[?&]fresh=1\b/.test(window.location.search);
-    if(arrivedFresh){
+    /* arriving via Chapter One's own "Resume where you left off" (it having
+       determined the reader's furthest point is actually here) should land
+       on the exact saved scene directly — not just this chapter's own
+       opening screen, which would otherwise make the reader click Resume
+       a second time to get where the first click already promised.       */
+    var autoResume = /[?&]autoresume=1\b/.test(window.location.search);
+    if(arrivedFresh || autoResume){
       try{ window.history.replaceState(null, '', window.location.pathname); }catch(e){}
     }
 
@@ -1805,6 +1811,17 @@
       if(!raw) return;
       var data = JSON.parse(raw);
       if(!data || !data.scene || !scenes[data.scene]) return;
+
+      if(autoResume){
+        steady = data.steady || 0;
+        looked = data.looked || {};
+        spent  = data.spent  || {};
+        examTimes = data.examTimes || {};
+        openC.classList.add('gone');
+        paint(data.scene);
+        return;
+      }
+
       var resumeBtn = document.getElementById('resume');
       resumeBtn.classList.remove('gone');
       document.getElementById('begin').textContent = 'Restart';

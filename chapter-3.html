@@ -526,7 +526,7 @@
     <a class="go buy" href="https://mybook.to/ThePatientGround" target="_blank" rel="noopener">Buy the Book</a>
     <a class="go" href="chapter-1.html">Play from Chapter One</a>
     <button class="again-link" id="again">Start Chapter Three again</button>
-    <span class="foot">The Patient Ground — a novel by [Author Name]</span>
+    <span class="foot">The Patient Ground — a novel by Peter G Thompson</span>
   </div>
 
 </div>
@@ -1641,7 +1641,13 @@
        resume still works normally in that case. The old save itself is
        left untouched either way — this only suppresses the offer.        */
     var arrivedFresh = /[?&]fresh=1\b/.test(window.location.search);
-    if(arrivedFresh){
+    /* arriving via Chapter One's own "Resume where you left off" (it having
+       determined the reader's furthest point is actually here) should land
+       on the exact saved scene directly — not just this chapter's own
+       opening screen, which would otherwise make the reader click Resume
+       a second time to get where the first click already promised.       */
+    var autoResume = /[?&]autoresume=1\b/.test(window.location.search);
+    if(arrivedFresh || autoResume){
       try{ window.history.replaceState(null, '', window.location.pathname); }catch(e){}
     }
 
@@ -1651,6 +1657,16 @@
       if(!raw) return;
       var data = JSON.parse(raw);
       if(!data || !data.scene || !scenes[data.scene]) return;
+
+      if(autoResume){
+        steady = data.steady || 0;
+        looked = data.looked || {};
+        spent  = data.spent  || {};
+        openC.classList.add('gone');
+        paint(data.scene);
+        return;
+      }
+
       var resumeBtn = document.getElementById('resume');
       resumeBtn.classList.remove('gone');
       document.getElementById('begin').textContent = 'Restart';
